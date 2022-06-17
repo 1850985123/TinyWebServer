@@ -8,7 +8,7 @@ make: *** No rule to make target 'all'.  Stop.
 # This is free software: you are free to change and redistribute it.
 # There is NO WARRANTY, to the extent permitted by law.
 
-# Make data base, printed on Fri Jun 17 04:05:25 2022
+# Make data base, printed on Fri Jun 17 15:26:39 2022
 
 # Variables
 
@@ -53,7 +53,7 @@ LESSOPEN = | /usr/bin/lesspipe %s
 # environment
 VSCODE_CWD = /root
 # environment
-SSH_CONNECTION = 119.139.136.127 29478 172.22.24.161 22
+SSH_CONNECTION = 119.139.136.127 27689 172.22.24.161 22
 # environment
 PATH = /root/.vscode-server/bin/30d9c6cd9483b2cc586687151bcbcd635f373630/bin/remote-cli:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games
 # environment
@@ -71,7 +71,7 @@ VSCODE_PIPE_LOGGING = true
 # environment
 PWD = /root/deng/myTinyWebsever/TinyWebServer
 # environment
-VSCODE_IPC_HOOK_CLI = /run/user/0/vscode-ipc-cec8ace7-4015-4fc1-aec4-9dcce0839aae.sock
+VSCODE_IPC_HOOK_CLI = /run/user/0/vscode-ipc-1804a87f-4f97-4b9e-b3b2-e46fd4f4e2e1.sock
 # automatic
 *D = $(patsubst %/,%,$(dir $*))
 # environment
@@ -108,8 +108,6 @@ USER = root
 %D = $(patsubst %/,%,$(dir $%))
 # default
 MAKE_COMMAND := make
-# environment
-OLDPWD = /root/.vscode-server/bin/30d9c6cd9483b2cc586687151bcbcd635f373630
 # default
 .VARIABLES := 
 # automatic
@@ -119,7 +117,7 @@ MAKEFLAGS = pqrR
 # environment
 MFLAGS = -pqrR
 # environment
-SSH_CLIENT = 119.139.136.127 29478 22
+SSH_CLIENT = 119.139.136.127 27689 22
 # environment
 MAIL = /var/mail/root
 # automatic
@@ -151,7 +149,7 @@ LANG = C
 # environment
 VSCODE_EXTHOST_WILL_SEND_SOCKET = true
 # variable set hash-table stats:
-# Load=69/1024=7%, Rehash=0, Collisions=7/98=7%
+# Load=68/1024=7%, Rehash=0, Collisions=7/97=7%
 
 # Pattern-specific Variable Values
 
@@ -187,12 +185,12 @@ server: main.cpp timer/lst_timer.cpp http/http_conn.cpp log/log.cpp CGImysql/sql
 #  Modification time never checked.
 #  File has not been updated.
 #  recipe to execute (from 'makefile', line 12):
-	$(CXX) -o server  $^ $(CXXFLAGS) -lpthread -lmysqlclient
+	$(CXX) -o server  $^ $(CXXFLAGS) -lpthread -lmysqlclient -Wwrite-strings
 
 # Not a target:
 makefile:
 #  Implicit rule search has been done.
-#  Last modified 2022-06-17 00:08:38.28203582
+#  Last modified 2022-06-17 15:23:34.195748
 #  File has been updated.
 #  Successfully updated.
 
@@ -209,6 +207,7 @@ timer/lst_timer.cpp:
 #  File has not been updated.
 
 # Not a target:
+ 
 CGImysql/sql_connection_pool.cpp:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
@@ -259,6 +258,6 @@ webserver.cpp:
 # strcache performance: lookups = 44 / hit rate = 22%
 # hash-table stats:
 # Load=34/8192=0%, Rehash=0, Collisions=1/44=2%
-# Finished Make data base on Fri Jun 17 04:05:25 2022
+# Finished Make data base on Fri Jun 17 15:26:39 2022
 
  

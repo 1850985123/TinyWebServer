@@ -8,6 +8,7 @@
         "sstream": "cpp",
         "exception": "cpp",
         "cerrno": "c",
-        "limits": "c"
+        "limits": "c",
+        "new": "cpp"
     }
 }

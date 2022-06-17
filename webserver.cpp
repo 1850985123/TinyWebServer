@@ -82,13 +82,13 @@ void WebServer::log_write()
         if (1 == m_log_write)//deng: 异步写入日志
         {
             cout<< "异步写入日志 "<<endl;
-             Log::get_instance()->init("./mySeverLog", m_close_log, 800000*2, 800);//"./ServerLog"
+             Log::get_instance()->init(LOG_FIRST_DIR_NAME, m_close_log, 800000*2, 800);//"./ServerLog"
         }
            
         else
         {
              cout<< "同步写入日志 "<<endl;
-             Log::get_instance()->init("./mySeverLog", m_close_log, 800000*2, 0);
+             Log::get_instance()->init(LOG_FIRST_DIR_NAME, m_close_log, 800000*2, 0);
         }
            
     }
@@ -424,10 +424,17 @@ void WebServer::eventLoop()
 
     while(1)
     {
-        LOG_DEBUG("%s %d", "LOG_DEBUG", count);
-        LOG_INFO("%s %d", "LOG_INFO", count);
-        LOG_WARN("%s %d", "LOG_WARN", count);
-        LOG_ERROR("%s %d", "LOG_ERROR", count++);
+        // if(++count %1000000 == 0)
+        // {
+        //     LOG_DEBUG("%s %lld", "LOG_DEBUG", count/1000000000);
+        //     LOG_INFO("%s %lld", "LOG_INFO", count/1000000000);
+        //     LOG_WARN("%s %lld", "LOG_WARN", count/1000000000);
+        //     LOG_ERROR("%s %lld", "LOG_ERROR", count/1000000000);
+        //     LOG_DENG("%s %lld", "LOG_DENG", count/1000000000);
+        //     LOG_GENG("%s %lld", "LOG_GENG", count/1000000000);
+        //     ++count;
+        // }
+        
 
     }
     while (!stop_server)

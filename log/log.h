@@ -35,47 +35,45 @@ public:
 private:
     Log();
     virtual ~Log();
+    
     void *async_write_log();
+    int getLogLevel(const char* logLevel);
+    bool openLogFile(int  logLevel);
+    bool creatDirAndFile(const char *first_dir_name, const char *second_dir_name);
 private:
-    bool openLogFile(const char * logLevel);
-    enum LOG_LEVLE{
-        DEBUG = 0,
-        INFO,
-        WARN,
-        ERROR,
-        ALL,
-        LOG_LEVLE_MAX
-    };
     struct LogInfo{
-        LOG_LEVLE level;
+        int level;
         string content;
     };
-
     char m_first_dir_name[128]; //根目录路径名
     char m_second_dir_name[128]; //二级目录路径名
 
     int m_split_lines;  //日志最大行数
     long long m_count;  //日志行数记录
     int m_today;        //因为按天分类,记录当前时间是那一天
-    FILE *m_fp[LOG_LEVLE_MAX];         //打开log的文件指针
-    char m_buf[2048];
+    FILE **m_fp;         //打开log的文件指针
+    char m_buf[2048];   //日志内容缓冲区
+
     block_queue<LogInfo> *m_log_queue; //阻塞队列
     bool m_is_async;                  //是否同步标志位
     locker m_mutex;
     int m_close_log; //关闭日志
 
-    char **m_log_string;
+    int m_logLevelCounts; // 日志级别的数量
+    char **m_logLevelStrings;  //用来保存日志级别字符串
 };
 
-#define LOG_STRING_LEVEL_COUNTS  {"DEBUG", "INFO", "WARN", "ERROR", "DNEG"}
 
-#define LOG_DEBUG(format, ...) if(0 == m_close_log) {Log::get_instance()->write_log("DEBUG", format, ##__VA_ARGS__); Log::get_instance()->flush();}
-#define LOG_INFO(format, ...) if(0 == m_close_log) {Log::get_instance()->write_log("INFO", format, ##__VA_ARGS__); Log::get_instance()->flush();}
-#define LOG_WARN(format, ...) if(0 == m_close_log) {Log::get_instance()->write_log("WARN", format, ##__VA_ARGS__); Log::get_instance()->flush();}
-#define LOG_ERROR(format, ...) if(0 == m_close_log) {Log::get_instance()->write_log("ERROR", format, ##__VA_ARGS__); Log::get_instance()->flush();}
+#pragma GCC diagnostic ignored "-Wwrite-strings" //屏蔽一些过时的警告
+#define LOG_STRING_LEVEL_COUNTS  {"ALL", "DEBUG", "INFO", "WARN", "ERROR", "DNEG", "GENG"}   //日志越靠前级别越低
+#define LOG_FIRST_DIR_NAME "./mySeverLog"  //日志的根目录名字
 
-
-// #define LOG_DENG(format, ...) if(0 == m_close_log) {Log::get_instance()->write_log("DNEG", format, ##__VA_ARGS__); Log::get_instance()->flush();}
+#define LOG_DEBUG(format, ...) if(0 == m_close_log) {Log::get_instance()->write_log("DEBUG", format, ##__VA_ARGS__);}
+#define LOG_INFO(format, ...) if(0 == m_close_log) {Log::get_instance()->write_log("INFO", format, ##__VA_ARGS__); }
+#define LOG_WARN(format, ...) if(0 == m_close_log) {Log::get_instance()->write_log("WARN", format, ##__VA_ARGS__); }
+#define LOG_ERROR(format, ...) if(0 == m_close_log) {Log::get_instance()->write_log("ERROR", format, ##__VA_ARGS__); }
+#define LOG_DENG(format, ...) if(0 == m_close_log) {Log::get_instance()->write_log("DNEG", format, ##__VA_ARGS__);}
+#define LOG_GENG(format, ...) if(0 == m_close_log) {Log::get_instance()->write_log("GENG", format, ##__VA_ARGS__);}
 
 // #define LOG_DEBUG(format, ...)
 // #define LOG_INFO(format, ...) 

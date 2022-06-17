@@ -10,6 +10,7 @@
 
 using namespace std;
 
+
 Log::Log()
 {
     m_count = 0;
@@ -18,36 +19,37 @@ Log::Log()
     memset(m_first_dir_name, '\0', sizeof(m_first_dir_name));
     memset(m_second_dir_name, '\0', sizeof(m_second_dir_name));
 
-    // char * levelList[]  = LOG_STRING_LEVEL_COUNTS;
-    // m_log_string = levelList;
-    // int levelCount = sizeof(levelList)/sizeof(char *);
-    // cout << levelCount<<endl;
+    char * levelList[]  = LOG_STRING_LEVEL_COUNTS;
+    m_logLevelCounts = sizeof(levelList)/sizeof(char *);
+    m_logLevelStrings = new char*[m_logLevelCounts];
+    for(int i = 0; i < m_logLevelCounts; i++)
+    {
+        m_logLevelStrings[i] = new char[strlen(levelList[i])];
+        strcpy( m_logLevelStrings[i], levelList[i]);
+    }
 
-    // levelCount = sizeof(m_log_string)/sizeof(char *);
-    // cout << levelCount<<endl;
+    // cout<<" 0m_logLevelStrings[logLevel] = "<< m_logLevelStrings[0]<<endl;
+    // FILE * F = new FILE;
+    m_fp = new FILE*[m_logLevelCounts];
 
-
-    // // m_log_kinds
-    // cout << sizeof(temp)<<endl;
-    // cout << temp[0]<<endl;
-    // cout << temp[1]<<endl;
-    // cout << temp[2]<<endl;
-    // cout << temp[3]<<endl;
-    // cout << temp[4]<<endl;
-    // cout << sizeof(m_log_string)<<endl;
-    // cout << m_log_string[1]<<endl;
 }
 
 Log::~Log()
 {
-    for(int i = DEBUG; i <  LOG_LEVLE_MAX; i++)
+    for(int i = 0; i <  m_logLevelCounts; i++)
     {
         if (m_fp[i] != NULL)
         {
             fclose(m_fp[i]);
         }
+        if(m_logLevelStrings[i])
+            delete m_logLevelStrings[i];
+
     }
-    
+    if(m_fp)
+        delete[] m_fp;
+    if(m_logLevelStrings)
+            delete[] m_logLevelStrings;
 }
 
 /* deng: 异步方式： 
@@ -81,71 +83,55 @@ bool Log::init(const char *dir_name, int close_log, int split_lines, int max_que
     struct tm my_tm = *sys_tm;
 
     strcpy(m_first_dir_name, dir_name ); //deng: log_name = 日志名
-    //先得到一级目录名
-    int ret = mkdir(dir_name, S_IRUSR|S_IWUSR); //dneg:所有者有读写权限
-    cout<< "mkdir ret == "<< ret << endl;
-
     //在得到二级目录名
-    char tempFullDirName[256] = {0};
     snprintf(m_second_dir_name, 256, "%s/%d_%02d_%02d/", m_first_dir_name, my_tm.tm_year + 1900, my_tm.tm_mon + 1, my_tm.tm_mday);
-
-    // cout<< m_dir_name <<endl;
-    //得到完整的目录名，创建目录。
-    ret = mkdir(m_second_dir_name, S_IRUSR|S_IWUSR); //dneg:所有者有读写权限
-    // cout<< "mkdir2 ret == "<< ret << endl;
     m_today = my_tm.tm_mday;
 
-    openLogFile("DEBUG");
-    openLogFile("INFO");
-    openLogFile("WARN");
-    openLogFile("ERROR");
-    openLogFile("ALL");
+    return creatDirAndFile(m_first_dir_name, m_second_dir_name);
+}
+
+
+bool Log::creatDirAndFile(const char *first_dir_name, const char *second_dir_name)
+{
+    int ret = mkdir(first_dir_name, S_IRUSR|S_IWUSR); //dneg:所有者有读写权限
+    // cout<< "mkdir ret == "<< ret << endl;
+
+    ret = mkdir(second_dir_name, S_IRUSR|S_IWUSR); //dneg:所有者有读写权限
+    // cout<< "mkdir2 ret == "<< ret << endl;
+     for(int i = 0; i <  m_logLevelCounts; i++)
+     {
+        if(openLogFile(i) == false)
+            return false;
+     }
     return true;
 }
-bool Log::openLogFile(const char * logLevel)
+
+bool Log::openLogFile(int logLevel)
 {
      /* 参数1： ①不带路径，表示打开当前目录下的文件，（-a: 表示在文件末尾追加内容，如果找不到文件则创建文件）
                 ②带路径，则打开具体路径的文件
      */
-    LOG_LEVLE level;
-    if (strcasecmp("DEBUG", logLevel) == 0)
-    {
-        level = DEBUG;
-    }else if(strcasecmp("INFO", logLevel) == 0)
-    {
-        level = INFO;
-    }
-    else  if(strcasecmp("WARN", logLevel) == 0)
-    {
-        level = WARN;
-    }
-    else  if(strcasecmp("ERROR", logLevel) == 0)
-    {
-        level = ERROR;
-    }
-    else  if(strcasecmp("ALL", logLevel) == 0)
-    {
-        level = ALL;
-    }
-    else{
-       return false;
-    }
     char tempLogFileName[256] = {0};
+    snprintf(tempLogFileName, 256, "%s%s", m_second_dir_name, m_logLevelStrings[logLevel]);
+    m_fp[logLevel] = fopen(tempLogFileName, "a");
 
-    snprintf(tempLogFileName, 256, "%s%s", m_second_dir_name, logLevel);
-    cout<< tempLogFileName <<endl;
-    m_fp[level] = fopen(tempLogFileName, "a");
+    if (m_fp[logLevel] == NULL)
+    {
+        cout<<__FILE__<<"\t"<<__LINE__<<"\t"<<"文件打开失败"<<endl;
+        return false;
+    }
 
-     for(int i = DEBUG; i <  LOG_LEVLE_MAX; i++)
-     {
-        if (m_fp[level] == NULL)
-        {
-            cout<<__FILE__<<"\t"<<__LINE__<<"\t"<<"文件打开失败"<<endl;
-            return false;
-        }
-     }
-    
     return true;
+}
+
+int Log::getLogLevel(const char* logLevel)
+{
+    for(int i = 0; i <  m_logLevelCounts; i++)
+    {
+        if(strcasecmp(logLevel, m_logLevelStrings[i]) == 0)
+            return i;
+    }
+    return 0;
 }
 
 void Log::write_log(const char* logLevel, const char *format, ...)
@@ -155,30 +141,7 @@ void Log::write_log(const char* logLevel, const char *format, ...)
     time_t t = now.tv_sec;
     struct tm *sys_tm = localtime(&t);
     struct tm my_tm = *sys_tm;
-    char s[16] = {0};
 
-    LOG_LEVLE level;
-    if (strcasecmp("DEBUG", logLevel) == 0)
-    {
-        level = DEBUG;
-       strcpy(s, "[debug]:");
-    }else if(strcasecmp("INFO", logLevel) == 0)
-    {
-        level = INFO;
-        strcpy(s, "[info]:");
-    }
-    else  if(strcasecmp("WARN", logLevel) == 0)
-    {
-         level = WARN;
-        strcpy(s, "[warn]:");
-    }
-    else  if(strcasecmp("ERROR", logLevel) == 0)
-    {
-        level = ERROR;
-        strcpy(s, "[erro]:");
-    }else{
-       return ;
-    }
     //写入一个log，对m_count++, m_split_lines最大行数
     m_mutex.lock();
     m_count++;
@@ -187,7 +150,7 @@ void Log::write_log(const char* logLevel, const char *format, ...)
     if (m_today != my_tm.tm_mday || m_count % m_split_lines == 0) //everyday log
     {
         //deng: 关闭之前的文件，用新的日志文件存储日志
-        for(int i = DEBUG; i <  LOG_LEVLE_MAX; i++)
+        for(int i = 0; i <  m_logLevelCounts; i++)
         {
             fflush(m_fp[i]);
             fclose(m_fp[i]);
@@ -206,15 +169,7 @@ void Log::write_log(const char* logLevel, const char *format, ...)
             //deng: %lld=long long;
             snprintf(m_second_dir_name, 128, "%s/%d_%02d_%02d.%lld/", m_first_dir_name, my_tm.tm_year + 1900, my_tm.tm_mon + 1, my_tm.tm_mday, m_count / m_split_lines);
         }
-         cout<< m_second_dir_name <<endl;
-        //得到完整的目录名，创建目录。
-        int ret = mkdir(m_second_dir_name, S_IRUSR|S_IWUSR); //dneg:所有者有读写权限
-        // cout<< "mkdir2 ret == "<< ret << endl;
-        openLogFile("DEBUG");
-        openLogFile("INFO");
-        openLogFile("WARN");
-        openLogFile("ERROR");
-        openLogFile("ALL");
+        creatDirAndFile(m_first_dir_name, m_second_dir_name);
     }
  
     m_mutex.unlock();
@@ -225,22 +180,21 @@ void Log::write_log(const char* logLevel, const char *format, ...)
     m_mutex.lock();
 
     //写入的具体时间内容格式
-    int n = snprintf(m_buf, 48, "%d-%02d-%02d %02d:%02d:%02d.%06ld %s ",
+    int n = snprintf(m_buf, 48, "%d-%02d-%02d %02d:%02d:%02d.%06ld [%s]: ",
                      my_tm.tm_year + 1900, my_tm.tm_mon + 1, my_tm.tm_mday,
-                     my_tm.tm_hour, my_tm.tm_min, my_tm.tm_sec, now.tv_usec, s);
+                     my_tm.tm_hour, my_tm.tm_min, my_tm.tm_sec, now.tv_usec, logLevel);
     
     //把具体的日志内容也放入到缓冲区中
     int m = vsnprintf(m_buf + n, sizeof(m_buf) - 1 - n, format, valst);
     m_buf[n + m] = '\n';
     m_buf[n + m + 1] = '\0';
+    va_end(valst);
 
     LogInfo single_log;
     single_log.content = m_buf;
-    single_log.level = level;
+    single_log.level = getLogLevel(logLevel);
 
     m_mutex.unlock();
-
-    
 
     //dneg:异步
     if (m_is_async && !m_log_queue->full())
@@ -250,24 +204,13 @@ void Log::write_log(const char* logLevel, const char *format, ...)
     else//dneg:同步
     {
         m_mutex.lock();
-        fputs(single_log.content.c_str(), m_fp[ALL]);
+        fputs(single_log.content.c_str(), m_fp[0]);
         fputs(single_log.content.c_str(), m_fp[single_log.level]);
+        fflush(m_fp[0]);
+        fflush(m_fp[single_log.level]);
         m_mutex.unlock();
     }
-
-    va_end(valst);
 }
-
-void Log::flush(void)
-{
-    m_mutex.lock();
-    //强制刷新写入流缓冲区
-    for(int i = DEBUG; i <  LOG_LEVLE_MAX; i++)
-        fflush(m_fp[i]);
-    m_mutex.unlock();
-}
-
-
 
 void * Log::async_write_log()
 {
@@ -277,7 +220,9 @@ void * Log::async_write_log()
     {
         m_mutex.lock();
         fputs(single_log.content.c_str(), m_fp[single_log.level]);
-        fputs(single_log.content.c_str(), m_fp[ALL]);
+        fputs(single_log.content.c_str(), m_fp[0]);
+        fflush(m_fp[0]);
+        fflush(m_fp[single_log.level]);
         m_mutex.unlock();
     }
 }
