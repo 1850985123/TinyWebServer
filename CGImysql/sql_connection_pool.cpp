@@ -35,18 +35,24 @@ void connection_pool::init(string url, string User, string PassWord, string DBNa
 	for (int i = 0; i < MaxConn; i++)
 	{
 		MYSQL *con = NULL;
-		con = mysql_init(con);
+		con = mysql_init(con); // 连接mysql前要初始化
 
 		if (con == NULL)
 		{
-			LOG_ERROR("MySQL Error");
+			LOG_ERROR("MySQL Error1");
 			exit(1);
 		}
+		/*	url：	mysql服务器的主机名或ip,
+		 	user: 	mysql服务器的登录id,
+		  	passwd: mysql服务器的登录密码
+			db:		mysql服务器的数据库名称
+			port:	mysql服务器的端口  
+		*/
 		con = mysql_real_connect(con, url.c_str(), User.c_str(), PassWord.c_str(), DBName.c_str(), Port, NULL, 0);
 
 		if (con == NULL)
 		{
-			LOG_ERROR("MySQL Error");
+			LOG_ERROR("MySQL Error2");
 			exit(1);
 		}
 		connList.push_back(con);
@@ -71,6 +77,7 @@ MYSQL *connection_pool::GetConnection()
 	
 	lock.lock();
 
+	//deng: 把连接从数据库连接池中弹出一个
 	con = connList.front();
 	connList.pop_front();
 
@@ -89,6 +96,7 @@ bool connection_pool::ReleaseConnection(MYSQL *con)
 
 	lock.lock();
 
+	// deng: 把连接放回到数据库连接池中
 	connList.push_back(con);
 	++m_FreeConn;
 	--m_CurConn;
@@ -110,11 +118,12 @@ void connection_pool::DestroyPool()
 		for (it = connList.begin(); it != connList.end(); ++it)
 		{
 			MYSQL *con = *it;
-			mysql_close(con);
+			mysql_close(con); // deng: 关闭所有连接
 		}
 		m_CurConn = 0;
 		m_FreeConn = 0;
-		connList.clear();
+
+		connList.clear(); //deng: 清零连接池
 	}
 
 	lock.unlock();

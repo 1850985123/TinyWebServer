@@ -23,11 +23,15 @@ void sort_timer_lst::add_timer(util_timer *timer)
     {
         return;
     }
+
+    /* deng： 第一个添加的节点 */
     if (!head)
     {
         head = tail = timer;
         return;
     }
+
+    /* 超时时间最小，直接作为头结点 */
     if (timer->expire < head->expire)
     {
         timer->next = head;
@@ -44,15 +48,19 @@ void sort_timer_lst::adjust_timer(util_timer *timer)
         return;
     }
     util_timer *tmp = timer->next;
+    /* deng: 有问题？ (timer->expire < tmp->expire), timer->expire 可能比他前面的要小，应该要调整顺序 */
     if (!tmp || (timer->expire < tmp->expire))
     {
         return;
     }
     if (timer == head)
     {
+        /*deng: 删除节点 */
         head = head->next;
         head->prev = NULL;
         timer->next = NULL;
+
+        /*deng:  插入节点 */
         add_timer(timer, head);
     }
     else
@@ -62,6 +70,7 @@ void sort_timer_lst::adjust_timer(util_timer *timer)
         add_timer(timer, timer->next);
     }
 }
+/* 写的代码有点多，可以优化 */
 void sort_timer_lst::del_timer(util_timer *timer)
 {
     if (!timer)
@@ -102,13 +111,20 @@ void sort_timer_lst::tick()
     
     time_t cur = time(NULL);
     util_timer *tmp = head;
+
+    /*deng:  一次可能有多个文件描述符的定时时间到了。 */
     while (tmp)
     {
+        /* 没到定时时间 */
         if (cur < tmp->expire)
         {
             break;
         }
+
+        /* deng： 去除客户端fd的所以监听，并关闭客户端连接 */
         tmp->cb_func(tmp->user_data);
+
+        /*deng:  删除节点：从头结点依次往后删除 */
         head = tmp->next;
         if (head)
         {
@@ -119,12 +135,14 @@ void sort_timer_lst::tick()
     }
 }
 
+//deng: 复杂度 O（n）, 可以用优先级队列或平衡二叉树，O(logn)
 void sort_timer_lst::add_timer(util_timer *timer, util_timer *lst_head)
 {
     util_timer *prev = lst_head;
     util_timer *tmp = prev->next;
     while (tmp)
     {
+        /* deng: 插入节点 */
         if (timer->expire < tmp->expire)
         {
             prev->next = timer;
@@ -136,6 +154,8 @@ void sort_timer_lst::add_timer(util_timer *timer, util_timer *lst_head)
         prev = tmp;
         tmp = tmp->next;
     }
+
+    /* deng: 插入节点是最后一个 */
     if (!tmp)
     {
         prev->next = timer;
@@ -159,7 +179,7 @@ int Utils::setnonblocking(int fd)
     return old_option;
 }
 
-//将内核事件表注册读事件，ET模式，选择开启EPOLLONESHOT
+//将内核事件表注册读事件，ET模式，选择开启EPOLLONESHOT,deng : TRIGMode 设置是 ET 还是 LT
 void Utils::addfd(int epollfd, int fd, bool one_shot, int TRIGMode)
 {
     epoll_event event;
@@ -182,6 +202,7 @@ void Utils::sig_handler(int sig)
     //为保证函数的可重入性，保留原来的errno
     int save_errno = errno;
     int msg = sig;
+    // cout<<"sig == "<<sig<<endl;
     send(u_pipefd[1], (char *)&msg, 1, 0);
     errno = save_errno;
 }
@@ -215,10 +236,20 @@ int *Utils::u_pipefd = 0;
 int Utils::u_epollfd = 0;
 
 class Utils;
+
+/* deng： 去除客户端fd的所以监听，并关闭客户端连接 */
 void cb_func(client_data *user_data)
 {
     epoll_ctl(Utils::u_epollfd, EPOLL_CTL_DEL, user_data->sockfd, 0);
     assert(user_data);
+
+
+    in_port_t client_port = ntohs(user_data->address.sin_port);
+    char client_ip[100] = {0};    //客户端ip
+    inet_ntop(AF_INET, &user_data->address.sin_addr.s_addr, client_ip, sizeof(client_ip));
+    // int m_close_log = 0;
+    // LOG_DEBUG("关闭客户端连接：fd = %d, ip = %s, port = %d", user_data->sockfd, client_ip, client_port);
+    
     close(user_data->sockfd);
     http_conn::m_user_count--;
 }

@@ -46,6 +46,7 @@ public:
 	int m_close_log;	//日志开关
 };
 
+//deng: 构造的时候从连接池得到一个连接，析构的时候自动释放连接
 class connectionRAII{
 
 public:

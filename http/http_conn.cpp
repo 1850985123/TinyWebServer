@@ -116,6 +116,7 @@ void http_conn::init(int sockfd, const sockaddr_in &addr, char *root, int TRIGMo
     m_sockfd = sockfd;
     m_address = addr;
 
+    /* 在这个地方添加EPOLL事件，感觉很奇怪 */
     addfd(m_epollfd, sockfd, true, m_TRIGMode);
     m_user_count++;
 
@@ -169,7 +170,7 @@ http_conn::LINE_STATUS http_conn::parse_line()
         temp = m_read_buf[m_checked_idx];
         if (temp == '\r')
         {
-            if ((m_checked_idx + 1) == m_read_idx)
+            if ((m_checked_idx + 1) == m_read_idx)//deng: 缓冲区的内容已经读完了。
                 return LINE_OPEN;
             else if (m_read_buf[m_checked_idx + 1] == '\n')
             {
@@ -179,9 +180,9 @@ http_conn::LINE_STATUS http_conn::parse_line()
             }
             return LINE_BAD;
         }
-        else if (temp == '\n')
+        else if (temp == '\n') 
         {
-            if (m_checked_idx > 1 && m_read_buf[m_checked_idx - 1] == '\r')
+            if (m_checked_idx > 1 && m_read_buf[m_checked_idx - 1] == '\r')//dneg: 上次读取到\r就没了。
             {
                 m_read_buf[m_checked_idx - 1] = '\0';
                 m_read_buf[m_checked_idx++] = '\0';
@@ -197,8 +198,10 @@ http_conn::LINE_STATUS http_conn::parse_line()
 //非阻塞ET工作模式下，需要一次性将数据读完
 bool http_conn::read_once()
 {
+    //deng: 超过缓冲区大小
     if (m_read_idx >= READ_BUFFER_SIZE)
     {
+        printf("http_conn::read_once() 读取数据失败: 超过缓冲区大小\r\n");
         return false;
     }
     int bytes_read = 0;
@@ -206,6 +209,7 @@ bool http_conn::read_once()
     //LT读取数据
     if (0 == m_TRIGMode)
     {
+        LOG_DEBUG("LT读数据");
         bytes_read = recv(m_sockfd, m_read_buf + m_read_idx, READ_BUFFER_SIZE - m_read_idx, 0);
         m_read_idx += bytes_read;
 
@@ -219,17 +223,26 @@ bool http_conn::read_once()
     //ET读数据
     else
     {
+        LOG_DEBUG("ET读数据");
         while (true)
         {
+            /* deng: 读缓冲区里的内容如果大于READ_BUFFER_SIZE， 会怎样？先不管 */
             bytes_read = recv(m_sockfd, m_read_buf + m_read_idx, READ_BUFFER_SIZE - m_read_idx, 0);
             if (bytes_read == -1)
             {
+                /* 表示数据读完了 */
                 if (errno == EAGAIN || errno == EWOULDBLOCK)
-                    break;
+                {
+                     break;
+                }
+                   
+                printf("http_conn::read_once()  : read error\r\n");
                 return false;
             }
-            else if (bytes_read == 0)
+            else if (bytes_read == 0) //deng: 客户端断开连接
             {
+                /* 当缓冲区的数据超过 2048， 会进入这里， 导致关闭客户端 */
+                printf("客户端断开连接， m_read_idx = %d\r\n", m_read_idx);
                 return false;
             }
             m_read_idx += bytes_read;
@@ -241,6 +254,7 @@ bool http_conn::read_once()
 //解析http请求行，获得请求方法，目标url及http版本号
 http_conn::HTTP_CODE http_conn::parse_request_line(char *text)
 {
+    /*deng : strpbrk : 返回指向字符串str2中的任意字符第一次出现在字符串str1中的位置的指针；如果str1中没有与str2相同的字符，那么返回NULL。*/
     m_url = strpbrk(text, " \t");
     if (!m_url)
     {
@@ -257,20 +271,23 @@ http_conn::HTTP_CODE http_conn::parse_request_line(char *text)
     }
     else
         return BAD_REQUEST;
-    m_url += strspn(m_url, " \t");
+    /* deng: strspn :检索字符串 str1 中第一个不在字符串 str2 中出现的字符下标 */
+    m_url += strspn(m_url, " \t"); //
     m_version = strpbrk(m_url, " \t");
     if (!m_version)
         return BAD_REQUEST;
     *m_version++ = '\0';
-    m_version += strspn(m_version, " \t");
+    m_version += strspn(m_version, " \t"); // deng: 跳过 空格 和 \t
     if (strcasecmp(m_version, "HTTP/1.1") != 0)
         return BAD_REQUEST;
+
+    //deng : ??
     if (strncasecmp(m_url, "http://", 7) == 0)
     {
         m_url += 7;
         m_url = strchr(m_url, '/');
     }
-
+    //deng : ??
     if (strncasecmp(m_url, "https://", 8) == 0)
     {
         m_url += 8;
@@ -281,7 +298,7 @@ http_conn::HTTP_CODE http_conn::parse_request_line(char *text)
         return BAD_REQUEST;
     //当url为/时，显示判断界面
     if (strlen(m_url) == 1)
-        strcat(m_url, "judge.html");
+        strcat(m_url, "judge.html");//degn: strcat :把str2(包括'\0')拷贝到str1的尾部(连接)，并返回str1。其中终止原str1的'\0'被str2的第一个字符覆盖。
     m_check_state = CHECK_STATE_HEADER;
     return NO_REQUEST;
 }
@@ -289,7 +306,7 @@ http_conn::HTTP_CODE http_conn::parse_request_line(char *text)
 //解析http请求的一个头部信息
 http_conn::HTTP_CODE http_conn::parse_headers(char *text)
 {
-    if (text[0] == '\0')
+    if (text[0] == '\0') // deng: 已经到最后一个空行。 转态只在这里改变
     {
         if (m_content_length != 0)
         {
@@ -341,15 +358,24 @@ http_conn::HTTP_CODE http_conn::parse_content(char *text)
 
 http_conn::HTTP_CODE http_conn::process_read()
 {
+    
     LINE_STATUS line_status = LINE_OK;
     HTTP_CODE ret = NO_REQUEST;
     char *text = 0;
 
+    static int count = 0;
+    // printf("\r\n接收：第 %d 条内容\r\n", ++count);
+
+    LOG_INFO("\r\n接收：第 %d 条内容\r\n", ++count);
+    // printf("%s", m_read_buf);
+
     while ((m_check_state == CHECK_STATE_CONTENT && line_status == LINE_OK) || ((line_status = parse_line()) == LINE_OK))
     {
-        text = get_line();
-        m_start_line = m_checked_idx;
-        LOG_INFO("%s", text);
+        text = get_line();// deng: 得到刚才解析成功的一行数据
+        m_start_line = m_checked_idx; //deng: 确定下一行的起始地址
+        // LOG_INFO("%s", text);
+         
+
         switch (m_check_state)
         {
         case CHECK_STATE_REQUESTLINE:
@@ -502,10 +528,10 @@ http_conn::HTTP_CODE http_conn::do_request()
     if (stat(m_real_file, &m_file_stat) < 0)
         return NO_RESOURCE;
 
-    if (!(m_file_stat.st_mode & S_IROTH))
+    if (!(m_file_stat.st_mode & S_IROTH))//deng: 文件不可读
         return FORBIDDEN_REQUEST;
 
-    if (S_ISDIR(m_file_stat.st_mode))
+    if (S_ISDIR(m_file_stat.st_mode)) //deng： 是一个目录
         return BAD_REQUEST;
 
     int fd = open(m_real_file, O_RDONLY);
@@ -523,6 +549,7 @@ void http_conn::unmap()
 }
 bool http_conn::write()
 {
+    static int count = 0;
     int temp = 0;
 
     if (bytes_to_send == 0)
@@ -531,6 +558,12 @@ bool http_conn::write()
         init();
         return true;
     }
+    // printf("发送：第 %d 条内容\r\n", ++count);
+    LOG_INFO("发送：第 %d 条内容\r\n", ++count);
+
+    // printf("%s", m_write_buf);
+    //  printf("%s", m_file_address);
+
 
     while (1)
     {
@@ -538,9 +571,9 @@ bool http_conn::write()
 
         if (temp < 0)
         {
-            if (errno == EAGAIN)
+            if (errno == EAGAIN) //deng: 内核写缓冲区满了，等客户端读取数据后才可以写。
             {
-                modfd(m_epollfd, m_sockfd, EPOLLOUT, m_TRIGMode);
+                modfd(m_epollfd, m_sockfd, EPOLLOUT, m_TRIGMode);//deng： 第一次注册（每次调用这个函数）或 从不可写到可写，调用 epooll_wait 会触发一次写事件。
                 return true;
             }
             unmap();
@@ -566,7 +599,7 @@ bool http_conn::write()
             unmap();
             modfd(m_epollfd, m_sockfd, EPOLLIN, m_TRIGMode);
 
-            if (m_linger)
+            if (m_linger)// deng: 保持连接
             {
                 init();
                 return true;
@@ -578,6 +611,8 @@ bool http_conn::write()
         }
     }
 }
+
+//deng: false: 写缓冲区的数据满了。
 bool http_conn::add_response(const char *format, ...)
 {
     if (m_write_idx >= WRITE_BUFFER_SIZE)
@@ -688,6 +723,8 @@ bool http_conn::process_write(HTTP_CODE ret)
 void http_conn::process()
 {
     HTTP_CODE read_ret = process_read();
+
+    //deng: NO_REQUEST :直接什么都不回
     if (read_ret == NO_REQUEST)
     {
         modfd(m_epollfd, m_sockfd, EPOLLIN, m_TRIGMode);

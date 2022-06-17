@@ -1,0 +1,5 @@
+make --dry-run --always-make --keep-going --print-directory
+make: Entering directory '/root/deng/myTinyWebsever/TinyWebServer'
+g++ -o server  main.cpp timer/lst_timer.cpp http/http_conn.cpp log/log.cpp CGImysql/sql_connection_pool.cpp webserver.cpp config.cpp -g -lpthread -lmysqlclient
+make: Leaving directory '/root/deng/myTinyWebsever/TinyWebServer'
+ 

@@ -39,10 +39,10 @@ public:
     util_timer() : prev(NULL), next(NULL) {}
 
 public:
-    time_t expire;
-    
-    void (* cb_func)(client_data *);
-    client_data *user_data;
+    time_t expire; //deng：超时时间
+    void (* cb_func)(client_data *);  //dneg: 超时回调函数
+
+    client_data *user_data; // deng: 用来：/* deng： 去除客户端fd的所以监听，并关闭客户端连接 */
     util_timer *prev;
     util_timer *next;
 };
