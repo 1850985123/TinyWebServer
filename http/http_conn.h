@@ -25,6 +25,7 @@
 #include "../CGImysql/sql_connection_pool.h"
 #include "../timer/lst_timer.h"
 #include "../log/log.h"
+#include "../CGImysql/mySqlApp.h"
 
 class http_conn
 {
@@ -32,6 +33,10 @@ public:
     static const int FILENAME_LEN = 200;
     static const int READ_BUFFER_SIZE = 2048;
     static const int WRITE_BUFFER_SIZE = 1024;
+    static int m_epollfd; //
+    static int m_user_count;//deng: 记录连接服务器用户的数量
+    static MySqlApp* m_mySqlApp;
+public:
     enum METHOD
     {
         GET = 0,
@@ -56,9 +61,9 @@ public:
         GET_REQUEST,
         BAD_REQUEST,
         NO_RESOURCE,
-        FORBIDDEN_REQUEST,
-        FILE_REQUEST,
-        INTERNAL_ERROR,
+        FORBIDDEN_REQUEST,  //文件不可读
+        FILE_REQUEST,       //请求文件
+        INTERNAL_ERROR,  //
         CLOSED_CONNECTION
     };
     enum LINE_STATUS
@@ -67,13 +72,12 @@ public:
         LINE_BAD,
         LINE_OPEN  //表示读取的数据没有以\r\n结尾，读取的数据还不完整。
     };
-
 public:
     http_conn() {}
     ~http_conn() {}
 
 public:
-    void init(int sockfd, const sockaddr_in &addr, char *, int, int, string user, string passwd, string sqlname);
+    void init(int sockfd, const sockaddr_in &addr, char *, int);
     void close_conn(bool real_close = true);
     void process();
     bool read_once(); 
@@ -82,10 +86,8 @@ public:
     {
         return &m_address;
     }
-    void initmysql_result(connection_pool *connPool);
     int timer_flag;
     int improv;
-
 
 private:
     void init();
@@ -108,49 +110,47 @@ private:
     bool add_blank_line();
 
 public:
-    static int m_epollfd; //
-    static int m_user_count;//deng: 记录连接服务器用户的数量
-    MYSQL *mysql;
-    int m_state;  //读为0, 写为1
 
+    int m_state;  //读为0, 写为1
 private:
+     struct http_decodeInfo{
+        METHOD      method;            //请求的方法
+        char        *url;               //请求的url
+        char        *version;           //请求的http版本
+        char        *Host;              //请求的主机地址，ip + port
+        int         content_length;     //提交内容长度
+        bool        keep_alive;         //deng: 是否和客户端保持长连接。
+        char        *content_string;    //存储请求头数据,提交的内容
+
+        char        request_file_path[FILENAME_LEN];    //客户端的url请求对应的服务器资源完整路径。
+        char        *request_file_mmapAddress;          //请求资源文件的mmap映射的地址
+        struct stat request_file_stat;                  //请求资源文件的属性
+    };
+    http_decodeInfo  m_http_decodeInfo;   //这个是http协议解析的信息集合
+
+
     char m_read_buf[READ_BUFFER_SIZE];//deng: 读取数据的缓冲区
     int m_read_idx;                   //deng: 读取数据的索引，也就是当前读取的数量
-
     int m_checked_idx;
     int m_start_line;
-    char m_write_buf[WRITE_BUFFER_SIZE];
-    int m_write_idx;
     CHECK_STATE m_check_state;
 
-    METHOD m_method;
-    char m_real_file[FILENAME_LEN];
-    char *m_url;
-    char *m_version;
-    char *m_host;
-    int m_content_length;
-    bool m_linger;  //deng: 是否和客户端保持长连接。
-    char *m_file_address;
-    struct stat m_file_stat;
-
+    char m_write_buf[WRITE_BUFFER_SIZE];
+    int m_write_idx;
     struct iovec m_iv[2];
     int m_iv_count;
-    int cgi;        //是否启用的POST
-    char *m_string; //存储请求头数据
-    int bytes_to_send;
-    int bytes_have_send;
-
+    
     map<string, string> m_users;
 
     /* 以下是初始化需要传入的参数。 */
-    char *doc_root;
+    char *doc_root;  //
+    int m_TRIGMode;
+
+    /* 这两个参数包含了客户端的所有参数 */
     int m_sockfd;
     sockaddr_in m_address;
-    int m_TRIGMode;
-    int m_close_log;
-    char sql_user[100];
-    char sql_passwd[100];
-    char sql_name[100];
+
+    
 };
 
 #endif

@@ -1,7 +1,5 @@
 make --dry-run --keep-going --print-directory
 make: Entering directory '/root/deng/myTinyWebsever/TinyWebServer'
- 
 make: 'server' is up to date.
- 
 make: Leaving directory '/root/deng/myTinyWebsever/TinyWebServer'
  

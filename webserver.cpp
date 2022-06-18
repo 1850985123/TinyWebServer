@@ -30,19 +30,12 @@ WebServer::~WebServer()
     delete m_pool;
 }
 
-void WebServer::init(int port, string user, string passWord, string databaseName, int log_write, 
-                     int opt_linger, int trigmode, int sql_num, int thread_num, int close_log, int actor_model)
+void WebServer::init(int port, int opt_linger, int trigmode,  int thread_num,  int actor_model)
 {
     m_port = port;
-    m_user = user;
-    m_passWord = passWord;
-    m_databaseName = databaseName;
-    m_sql_num = sql_num;
     m_thread_num = thread_num;
-    m_log_write = log_write;
     m_OPT_LINGER = opt_linger;
     m_TRIGMode = trigmode;
-    m_close_log = close_log;
     m_actormodel = actor_model;
 }
 
@@ -76,38 +69,23 @@ void WebServer::trig_mode()
 
 void WebServer::log_write()
 {
-    if (0 == m_close_log) // deng: 日志打开进入
-    {
-        //初始化日志
-        if (1 == m_log_write)//deng: 异步写入日志
-        {
-            cout<< "异步写入日志 "<<endl;
-             Log::get_instance()->init(LOG_FIRST_DIR_NAME, m_close_log, 800000*2, 800);//"./ServerLog"
-        }
-           
-        else
-        {
-             cout<< "同步写入日志 "<<endl;
-             Log::get_instance()->init(LOG_FIRST_DIR_NAME, m_close_log, 800000*2, 0);
-        }
-           
-    }
+
 }
 
 void WebServer::sql_pool()
 {
-    //初始化数据库连接池
-    m_connPool = connection_pool::GetInstance();
-    m_connPool->init("localhost", m_user, m_passWord, m_databaseName, 3306, m_sql_num, m_close_log);
+    //     //初始化数据库连接池
+    // m_connPool = connection_pool::GetInstance();
+    // m_connPool->init("localhost", m_user, m_passWord, m_databaseName, 3306, m_sql_num);
 
-    //初始化数据库读取表
-    users->initmysql_result(m_connPool);
+    // //初始化数据库读取表
+    // users->initmysql_result(m_connPool);
 }
 
 void WebServer::thread_pool()
 {
     //线程池
-    m_pool = new threadpool<http_conn>(m_actormodel, m_connPool, m_thread_num);
+    m_pool = new threadpool<http_conn>(m_actormodel, m_thread_num);
 }
 
 void WebServer::eventListen()
@@ -142,9 +120,6 @@ void WebServer::eventListen()
     assert(ret >= 0);
     ret = listen(m_listenfd, 5);
     assert(ret >= 0);
-
-
-
 
     utils.init(TIMESLOT);
 
@@ -182,10 +157,7 @@ void WebServer::eventListen()
 /* deng: 这个函数在接收到客户端的连接的时候调用，初始化 http连接对象 和 超时定时器 */
 void WebServer::timer(int connfd, struct sockaddr_in client_address)
 {
-
-    
-
-    users[connfd].init(connfd, client_address, m_root, m_CONNTrigmode, m_close_log, m_user, m_passWord, m_databaseName);
+    users[connfd].init(connfd, client_address, m_root, m_CONNTrigmode);
 
     //初始化client_data数据
     //创建定时器，设置回调函数和超时时间，绑定用户数据，将定时器添加到链表中
@@ -301,11 +273,13 @@ bool WebServer::dealwithsignal(bool &timeout, bool &stop_server)
             {
             case SIGALRM:
             {
+                // cout<< "超时"<<endl;
                 timeout = true;
                 break;
             }
             case SIGTERM:
             {
+                // cout<< "停机"<<endl;
                 stop_server = true;
                 break;
             }
@@ -319,7 +293,7 @@ void WebServer::dealwithread(int sockfd)
 {
     util_timer *timer = users_timer[sockfd].timer;
 
-    //reactor
+    //reactor 异步
     if (1 == m_actormodel)
     {
         if (timer)
@@ -349,7 +323,7 @@ void WebServer::dealwithread(int sockfd)
     }
     else
     {
-        //proactor
+        //proactor 同步
         if (users[sockfd].read_once())
         {
             LOG_DEBUG("proactor: 从客户端读取到数据");
@@ -422,21 +396,6 @@ void WebServer::eventLoop()
 
     long long count = 0;
 
-    while(1)
-    {
-        // if(++count %1000000 == 0)
-        // {
-        //     LOG_DEBUG("%s %lld", "LOG_DEBUG", count/1000000000);
-        //     LOG_INFO("%s %lld", "LOG_INFO", count/1000000000);
-        //     LOG_WARN("%s %lld", "LOG_WARN", count/1000000000);
-        //     LOG_ERROR("%s %lld", "LOG_ERROR", count/1000000000);
-        //     LOG_DENG("%s %lld", "LOG_DENG", count/1000000000);
-        //     LOG_GENG("%s %lld", "LOG_GENG", count/1000000000);
-        //     ++count;
-        // }
-        
-
-    }
     while (!stop_server)
     {
 
@@ -449,8 +408,8 @@ void WebServer::eventLoop()
 
         for (int i = 0; i < number; i++)
         {
-            int sockfd = events[i].data.fd;
 
+            int sockfd = events[i].data.fd;
             //处理新到的客户连接
             if (sockfd == m_listenfd)
             {
@@ -476,6 +435,7 @@ void WebServer::eventLoop()
                  触发管道的EPOLL读事件）。
                  然后被epoll监听到，在这里统一处理， 多了个中间商？？暂时没看到意义何在?*/
                 bool flag = dealwithsignal(timeout, stop_server);
+                // cout<<"flag = "<< flag <<endl;
                 if (false == flag)
                     LOG_ERROR("%s", "dealclientdata failure");
             }
@@ -490,8 +450,6 @@ void WebServer::eventLoop()
                 dealwithwrite(sockfd);
             }
         }
-
-       
         
         if (timeout)
         {

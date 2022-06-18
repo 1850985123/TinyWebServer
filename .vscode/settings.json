@@ -9,6 +9,10 @@
         "exception": "cpp",
         "cerrno": "c",
         "limits": "c",
-        "new": "cpp"
+        "new": "cpp",
+        "iosfwd": "cpp",
+        "streambuf": "cpp",
+        "functional": "cpp",
+        "typeinfo": "cpp"
     }
 }

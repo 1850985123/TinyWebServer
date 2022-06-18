@@ -8,7 +8,7 @@ make: *** No rule to make target 'all'.  Stop.
 # This is free software: you are free to change and redistribute it.
 # There is NO WARRANTY, to the extent permitted by law.
 
-# Make data base, printed on Fri Jun 17 15:26:39 2022
+# Make data base, printed on Sun Jun 19 03:03:32 2022
 
 # Variables
 
@@ -53,7 +53,7 @@ LESSOPEN = | /usr/bin/lesspipe %s
 # environment
 VSCODE_CWD = /root
 # environment
-SSH_CONNECTION = 119.139.136.127 27689 172.22.24.161 22
+SSH_CONNECTION = 119.139.136.127 25641 172.22.24.161 22
 # environment
 PATH = /root/.vscode-server/bin/30d9c6cd9483b2cc586687151bcbcd635f373630/bin/remote-cli:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games
 # environment
@@ -71,7 +71,7 @@ VSCODE_PIPE_LOGGING = true
 # environment
 PWD = /root/deng/myTinyWebsever/TinyWebServer
 # environment
-VSCODE_IPC_HOOK_CLI = /run/user/0/vscode-ipc-1804a87f-4f97-4b9e-b3b2-e46fd4f4e2e1.sock
+VSCODE_IPC_HOOK_CLI = /run/user/0/vscode-ipc-ee5883e0-5649-44b8-9915-fdcc3894852f.sock
 # automatic
 *D = $(patsubst %/,%,$(dir $*))
 # environment
@@ -117,7 +117,7 @@ MAKEFLAGS = pqrR
 # environment
 MFLAGS = -pqrR
 # environment
-SSH_CLIENT = 119.139.136.127 27689 22
+SSH_CLIENT = 119.139.136.127 25641 22
 # environment
 MAIL = /var/mail/root
 # automatic
@@ -157,9 +157,9 @@ VSCODE_EXTHOST_WILL_SEND_SOCKET = true
 
 # Directories
 
-# . (device 64769, inode 1572951): 24 files, no impossibilities.
+# . (device 64769, inode 1572951): 25 files, no impossibilities.
 
-# 24 files, no impossibilities in 1 directories.
+# 25 files, no impossibilities in 1 directories.
 
 # Implicit Rules
 
@@ -174,13 +174,26 @@ all:
 #  File does not exist.
 #  File has not been updated.
 
+client: clientApp/025_client.c
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  recipe to execute (from 'makefile', line 17):
+	$(CXX) -o client  $^ $(CXXFLAGS) -lpthread -lmysqlclient -Wwrite-strings
+
+# Not a target:
+CGImysql/mySqlApp.cpp:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
 # Not a target:
 http/http_conn.cpp:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
 
-server: main.cpp timer/lst_timer.cpp http/http_conn.cpp log/log.cpp CGImysql/sql_connection_pool.cpp webserver.cpp config.cpp
+server: main.cpp timer/lst_timer.cpp http/http_conn.cpp log/log.cpp CGImysql/sql_connection_pool.cpp CGImysql/mySqlApp.cpp webserver.cpp config.cpp
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
@@ -190,12 +203,18 @@ server: main.cpp timer/lst_timer.cpp http/http_conn.cpp log/log.cpp CGImysql/sql
 # Not a target:
 makefile:
 #  Implicit rule search has been done.
-#  Last modified 2022-06-17 15:23:34.195748
+#  Last modified 2022-06-19 03:03:22.035854734
 #  File has been updated.
 #  Successfully updated.
 
 # Not a target:
 main.cpp:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+# Not a target:
+clientApp/025_client.c:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
@@ -207,7 +226,6 @@ timer/lst_timer.cpp:
 #  File has not been updated.
 
 # Not a target:
- 
 CGImysql/sql_connection_pool.cpp:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
@@ -245,19 +263,19 @@ webserver.cpp:
 #  File has not been updated.
 
 # files hash-table stats:
-# Load=13/1024=1%, Rehash=0, Collisions=0/30=0%
+# Load=16/1024=2%, Rehash=0, Collisions=0/35=0%
 # VPATH Search Paths
 
 # No 'vpath' search paths.
 
 # No general ('VPATH' variable) search path.
 
-# strcache buffers: 1 (0) / strings = 34 / storage = 340 B / avg = 10 B
-# current buf: size = 8162 B / used = 340 B / count = 34 / avg = 10 B
+# strcache buffers: 1 (0) / strings = 37 / storage = 392 B / avg = 10 B
+# current buf: size = 8162 B / used = 392 B / count = 37 / avg = 10 B
 
-# strcache performance: lookups = 44 / hit rate = 22%
+# strcache performance: lookups = 49 / hit rate = 24%
 # hash-table stats:
-# Load=34/8192=0%, Rehash=0, Collisions=1/44=2%
-# Finished Make data base on Fri Jun 17 15:26:39 2022
+# Load=37/8192=0%, Rehash=0, Collisions=1/49=2%
+# Finished Make data base on Sun Jun 19 03:03:32 2022
 
  

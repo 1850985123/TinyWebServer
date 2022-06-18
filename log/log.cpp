@@ -136,6 +136,8 @@ int Log::getLogLevel(const char* logLevel)
 
 void Log::write_log(const char* logLevel, const char *format, ...)
 {
+    if(m_close_log) //如果关闭了日志
+        return;
     struct timeval now = {0, 0};
     gettimeofday(&now, NULL);
     time_t t = now.tv_sec;
@@ -172,13 +174,9 @@ void Log::write_log(const char* logLevel, const char *format, ...)
         creatDirAndFile(m_first_dir_name, m_second_dir_name);
     }
  
-    m_mutex.unlock();
-
+    
     va_list valst;
     va_start(valst, format);
-
-    m_mutex.lock();
-
     //写入的具体时间内容格式
     int n = snprintf(m_buf, 48, "%d-%02d-%02d %02d:%02d:%02d.%06ld [%s]: ",
                      my_tm.tm_year + 1900, my_tm.tm_mon + 1, my_tm.tm_mday,

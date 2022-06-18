@@ -24,7 +24,7 @@ public:
 	//单例模式
 	static connection_pool *GetInstance();
 
-	void init(string url, string User, string PassWord, string DataBaseName, int Port, int MaxConn, int close_log); 
+	void init(string url, string User, string PassWord, string DataBaseName, int Port, int MaxConn); 
 
 private:
 	connection_pool();
@@ -43,7 +43,6 @@ public:
 	string m_User;		 //登陆数据库用户名
 	string m_PassWord;	 //登陆数据库密码
 	string m_DatabaseName; //使用数据库名
-	int m_close_log;	//日志开关
 };
 
 //deng: 构造的时候从连接池得到一个连接，析构的时候自动释放连接

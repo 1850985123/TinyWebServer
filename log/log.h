@@ -68,12 +68,12 @@ private:
 #define LOG_STRING_LEVEL_COUNTS  {"ALL", "DEBUG", "INFO", "WARN", "ERROR", "DNEG", "GENG"}   //日志越靠前级别越低
 #define LOG_FIRST_DIR_NAME "./mySeverLog"  //日志的根目录名字
 
-#define LOG_DEBUG(format, ...) if(0 == m_close_log) {Log::get_instance()->write_log("DEBUG", format, ##__VA_ARGS__);}
-#define LOG_INFO(format, ...) if(0 == m_close_log) {Log::get_instance()->write_log("INFO", format, ##__VA_ARGS__); }
-#define LOG_WARN(format, ...) if(0 == m_close_log) {Log::get_instance()->write_log("WARN", format, ##__VA_ARGS__); }
-#define LOG_ERROR(format, ...) if(0 == m_close_log) {Log::get_instance()->write_log("ERROR", format, ##__VA_ARGS__); }
-#define LOG_DENG(format, ...) if(0 == m_close_log) {Log::get_instance()->write_log("DNEG", format, ##__VA_ARGS__);}
-#define LOG_GENG(format, ...) if(0 == m_close_log) {Log::get_instance()->write_log("GENG", format, ##__VA_ARGS__);}
+#define LOG_DEBUG(format, ...)  {Log::get_instance()->write_log("DEBUG", format, ##__VA_ARGS__);}
+#define LOG_INFO(format, ...)   {Log::get_instance()->write_log("INFO", format, ##__VA_ARGS__); }
+#define LOG_WARN(format, ...)   {Log::get_instance()->write_log("WARN", format, ##__VA_ARGS__); }
+#define LOG_ERROR(format, ...)  {Log::get_instance()->write_log("ERROR", format, ##__VA_ARGS__);}
+#define LOG_DENG(format, ...)   {Log::get_instance()->write_log("DNEG", format, ##__VA_ARGS__);}
+#define LOG_GENG(format, ...)   {Log::get_instance()->write_log("GENG", format, ##__VA_ARGS__);}
 
 // #define LOG_DEBUG(format, ...)
 // #define LOG_INFO(format, ...) 
