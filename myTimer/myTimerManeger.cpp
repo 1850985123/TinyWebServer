@@ -8,7 +8,7 @@ using namespace std;
 
 static const int FD = 2;
 
-bool MyTimerManeger::compare_less(HEAP_DATA_TYPE a, HEAP_DATA_TYPE b)
+bool MyTimerManeger::compare_less(TimerInfo* a, TimerInfo* b)
 {
 	return a->tv_deadline.tv_sec < b->tv_deadline.tv_sec ||\
 		( (a->tv_deadline.tv_sec == b->tv_deadline.tv_sec) && (a->tv_deadline.tv_usec < b->tv_deadline.tv_usec));
@@ -16,7 +16,7 @@ bool MyTimerManeger::compare_less(HEAP_DATA_TYPE a, HEAP_DATA_TYPE b)
 
 MyTimerManeger:: MyTimerManeger()
 {
-    m_myHeap = new MyHeap(compare_less);
+    m_myHeap = new MyHeap< TimerInfo* >(compare_less);
     epollfd = epoll_create1(0);
     if (epollfd == -1) {
         perror("epoll_create1");

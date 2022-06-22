@@ -133,7 +133,7 @@ void WebServer::eventListen()
     Utils::addsig(SIGTERM, Utils::sig_handler, false); //kill 的结束进程信号
 
 
-
+    alarm(5);
     //工具类,信号和描述符基础操作
     Utils::u_pipefd = m_pipefd;
     Utils::u_epollfd = m_epollfd;
@@ -394,11 +394,11 @@ void WebServer::eventLoop()
             }
         }
         
-        // if (timeout)
-        // {
-        //     Utils::timer_handler();
-        //     timeout = false;
-        // }
+        if (timeout)
+        {
+            Utils::timer_handler();
+            timeout = false;
+        }
 
     }
     cout << "退出运行"<<endl;

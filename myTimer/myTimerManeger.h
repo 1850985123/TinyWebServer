@@ -14,7 +14,14 @@
 #include <sys/epoll.h>
 #include "../myHeap/myHeap.h"
 
-
+struct TimerInfo{
+    struct timeval tv_deadline; //定时截止时间
+    int timoout ;   //超时时间以ms为单位
+    int timer_indexInHeap;
+    bool isRuning; //True 表示正在运行， false表示被删除了。
+    void *(* timeoutCallBack)(void *arg);
+    void *arg; //timeoutCallBack 函数的传入参数
+};
 
 class MyTimerManeger
 { 
@@ -25,7 +32,7 @@ public:
         return &myTimerManeger;
     };
 
-    static bool compare_less(HEAP_DATA_TYPE a, HEAP_DATA_TYPE b); //m_myHeap ，里的比较方法，这里是小根堆。
+    static bool compare_less(TimerInfo* a, TimerInfo* b); //m_myHeap ，里的比较方法，这里是小根堆。
 private:
     // MyTimerApp();
     MyTimerManeger();
@@ -42,7 +49,7 @@ public:
     void delTimer(TimerInfo *timerInfo);
 private:
     /* 堆里的数据结构类型需要： 定时器的截止时间，超时时间，回调函数，定时器在堆里的索引（用来删除 O（1）） */
-    MyHeap *m_myHeap;
+    MyHeap<TimerInfo *> *m_myHeap;
     int epollfd;
     struct epoll_event  events[1];
 };

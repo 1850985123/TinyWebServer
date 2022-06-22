@@ -61,3 +61,10 @@ void Utils::show_error(int connfd, const char *info)
 
 int *Utils::u_pipefd = 0;
 int Utils::u_epollfd = 0;
+
+//定时处理任务，重新定时以不断触发SIGALRM信号
+void Utils::timer_handler()
+{
+    alarm(5);
+    cout<< "定时时间到"<<endl;
+}

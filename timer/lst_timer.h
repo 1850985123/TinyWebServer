@@ -48,6 +48,9 @@ public:
     static void addsig(int sig, void(handler)(int), bool restart = true);
     static void show_error(int connfd, const char *info);
     
+     //定时处理任务，重新定时以不断触发SIGALRM信号
+    static void timer_handler();
+
 public:
     static int *u_pipefd;
     static int u_epollfd;

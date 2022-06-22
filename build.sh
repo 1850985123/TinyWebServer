@@ -1,5 +1,6 @@
 #!/bin/bash
 
+clear
 rm -rf mySeverLog
 rm -rf client
 make clean

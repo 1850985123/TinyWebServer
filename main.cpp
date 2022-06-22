@@ -5,7 +5,7 @@
 #include "./myHeap/myHeap.h"
 
 
-#define MAX_SIZE  10
+#define MAX_SIZE  1
 void * timer1_callback(void *arg)
 {
     // struct timeval tv;
@@ -34,16 +34,16 @@ int main(int argc, char *argv[])
 
     for(int i = 0; i < MAX_SIZE; i++)
     {
-        tiemr[i] = new MyTimer(500*(i + 1),   timer1_callback, (void *)i);
+        tiemr[i] = new MyTimer(500*(i + 6),   timer1_callback, (void *)i);
         tiemr[i]->start();
     }
 
 
-    while(1)
-    {
-        sleep(5);
-        cout<<"我还活着"<<endl;
-    }
+    // while(1)
+    // {
+    //     sleep(5);
+    //     cout<<"我还活着"<<endl;
+    // }
 
     //需要修改的数据库信息,登录名,密码,库名
     // string user = "root";
