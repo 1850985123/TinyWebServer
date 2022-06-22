@@ -8,7 +8,7 @@ make: *** No rule to make target 'all'.  Stop.
 # This is free software: you are free to change and redistribute it.
 # There is NO WARRANTY, to the extent permitted by law.
 
-# Make data base, printed on Sun Jun 19 03:03:32 2022
+# Make data base, printed on Wed Jun 22 18:59:19 2022
 
 # Variables
 
@@ -53,7 +53,7 @@ LESSOPEN = | /usr/bin/lesspipe %s
 # environment
 VSCODE_CWD = /root
 # environment
-SSH_CONNECTION = 119.139.136.127 25641 172.22.24.161 22
+SSH_CONNECTION = 119.122.89.138 18683 172.22.24.161 22
 # environment
 PATH = /root/.vscode-server/bin/30d9c6cd9483b2cc586687151bcbcd635f373630/bin/remote-cli:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games
 # environment
@@ -71,7 +71,7 @@ VSCODE_PIPE_LOGGING = true
 # environment
 PWD = /root/deng/myTinyWebsever/TinyWebServer
 # environment
-VSCODE_IPC_HOOK_CLI = /run/user/0/vscode-ipc-ee5883e0-5649-44b8-9915-fdcc3894852f.sock
+VSCODE_IPC_HOOK_CLI = /run/user/0/vscode-ipc-53bd9baf-5567-445b-8e2b-73dac7f63a13.sock
 # automatic
 *D = $(patsubst %/,%,$(dir $*))
 # environment
@@ -99,7 +99,7 @@ MAKECMDGOALS := all
 # environment
 SHLVL = 3
 # environment
-XDG_SESSION_ID = 1
+XDG_SESSION_ID = 984
 # environment
 USER = root
 # makefile
@@ -117,7 +117,7 @@ MAKEFLAGS = pqrR
 # environment
 MFLAGS = -pqrR
 # environment
-SSH_CLIENT = 119.139.136.127 25641 22
+SSH_CLIENT = 119.122.89.138 18683 22
 # environment
 MAIL = /var/mail/root
 # automatic
@@ -157,15 +157,21 @@ VSCODE_EXTHOST_WILL_SEND_SOCKET = true
 
 # Directories
 
-# . (device 64769, inode 1572951): 25 files, no impossibilities.
+# . (device 64769, inode 1572951): 29 files, no impossibilities.
 
-# 25 files, no impossibilities in 1 directories.
+# 29 files, no impossibilities in 1 directories.
 
 # Implicit Rules
 
 # No implicit rules.
 
 # Files
+
+# Not a target:
+myTimer/myTimer.cpp:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
 
 # Not a target:
 all:
@@ -178,11 +184,11 @@ client: clientApp/025_client.c
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
-#  recipe to execute (from 'makefile', line 17):
-	$(CXX) -o client  $^ $(CXXFLAGS) -lpthread -lmysqlclient -Wwrite-strings
+#  recipe to execute (from 'makefile', line 22):
+	$(CXX) -o client  $^ $(CXXFLAGS) -lpthread -lmysqlclient -Wwrite-strings 
 
 # Not a target:
-CGImysql/mySqlApp.cpp:
+myHeap/myHeap.cpp:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
@@ -193,17 +199,17 @@ http/http_conn.cpp:
 #  Modification time never checked.
 #  File has not been updated.
 
-server: main.cpp timer/lst_timer.cpp http/http_conn.cpp log/log.cpp CGImysql/sql_connection_pool.cpp CGImysql/mySqlApp.cpp webserver.cpp config.cpp
+server: main.cpp timer/lst_timer.cpp http/http_conn.cpp log/log.cpp CGImysql/sql_connection_pool.cpp mySqlApp/mySqlApp.cpp webserver.cpp config.cpp myTimerApp/myTimerApp.cpp myTimer/myTimer.cpp myHeap/myHeap.cpp myTimer/myTimerManeger.cpp
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
-#  recipe to execute (from 'makefile', line 12):
+#  recipe to execute (from 'makefile', line 17):
 	$(CXX) -o server  $^ $(CXXFLAGS) -lpthread -lmysqlclient -Wwrite-strings
 
 # Not a target:
 makefile:
 #  Implicit rule search has been done.
-#  Last modified 2022-06-19 03:03:22.035854734
+#  Last modified 2022-06-22 18:59:04.851008171
 #  File has been updated.
 #  Successfully updated.
 
@@ -244,6 +250,12 @@ log/log.cpp:
 #  File has not been updated.
 
 # Not a target:
+mySqlApp/mySqlApp.cpp:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+# Not a target:
 config.cpp:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
@@ -253,7 +265,7 @@ clean:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
-#  recipe to execute (from 'makefile', line 15):
+#  recipe to execute (from 'makefile', line 20):
 	rm  -r server
 
 # Not a target:
@@ -262,20 +274,33 @@ webserver.cpp:
 #  Modification time never checked.
 #  File has not been updated.
 
+# Not a target:
+myTimerApp/myTimerApp.cpp:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+ 
+
+# Not a target:
+myTimer/myTimerManeger.cpp:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
 # files hash-table stats:
-# Load=16/1024=2%, Rehash=0, Collisions=0/35=0%
+# Load=20/1024=2%, Rehash=0, Collisions=0/43=0%
 # VPATH Search Paths
 
 # No 'vpath' search paths.
 
 # No general ('VPATH' variable) search path.
 
-# strcache buffers: 1 (0) / strings = 37 / storage = 392 B / avg = 10 B
-# current buf: size = 8162 B / used = 392 B / count = 37 / avg = 10 B
+# strcache buffers: 1 (0) / strings = 45 / storage = 517 B / avg = 11 B
+# current buf: size = 8162 B / used = 517 B / count = 45 / avg = 11 B
 
-# strcache performance: lookups = 49 / hit rate = 24%
+# strcache performance: lookups = 57 / hit rate = 21%
 # hash-table stats:
-# Load=37/8192=0%, Rehash=0, Collisions=1/49=2%
-# Finished Make data base on Sun Jun 19 03:03:32 2022
+# Load=45/8192=1%, Rehash=0, Collisions=1/57=2%
+# Finished Make data base on Wed Jun 22 18:59:19 2022
 
  

@@ -25,7 +25,7 @@
 #include "../CGImysql/sql_connection_pool.h"
 #include "../timer/lst_timer.h"
 #include "../log/log.h"
-#include "../CGImysql/mySqlApp.h"
+#include "../mySqlApp/mySqlApp.h"
 
 class http_conn
 {
@@ -139,8 +139,6 @@ private:
     int m_write_idx;
     struct iovec m_iv[2];
     int m_iv_count;
-    
-    map<string, string> m_users;
 
     /* 以下是初始化需要传入的参数。 */
     char *doc_root;  //

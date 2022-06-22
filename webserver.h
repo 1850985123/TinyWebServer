@@ -15,9 +15,11 @@
 #include "./threadpool/threadpool.h"
 #include "./http/http_conn.h"
 
+#include "./myTimerApp/myTimerApp.h"
+
 const int MAX_FD = 65536;           //最大文件描述符
 const int MAX_EVENT_NUMBER = 10000; //最大事件数
-const int TIMESLOT = 5;             //最小超时单位
+
 
 class WebServer
 {
@@ -28,14 +30,11 @@ public:
     void init(int port ,  int opt_linger, int trigmode, int thread_num,  int actor_model);
 
     void thread_pool();
-    void sql_pool();
-    void log_write();
     void trig_mode();
+
     void eventListen();
     void eventLoop();
-    void timer(int connfd, struct sockaddr_in client_address);
-    void adjust_timer(util_timer *timer);
-    void deal_timer(util_timer *timer, int sockfd);
+
     bool dealclinetdata();
     bool dealwithsignal(bool& timeout, bool& stop_server);
     void dealwithread(int sockfd);
@@ -45,9 +44,8 @@ public:
     //基础
     int m_port;
     char *m_root;
-    int m_log_write;
-    int m_close_log;
-    int m_actormodel;
+    int m_actormodel;  //react（io异步） 主线程负责 ：监听读写和连接事件。                  工作线程负责： 读操作、写操作。
+                      //preact（io同步） 主线程负责监 ：听读写和连接事件、读操作、写操作。   工作线程负责：业务处理
 
     int m_pipefd[2];
     int m_epollfd;
@@ -67,7 +65,7 @@ public:
     int m_CONNTrigmode;
 
     //定时器相关
-    client_data *users_timer;
-    Utils utils;
+    MyTimerApp *m_myTimerApp;
+
 };
 #endif

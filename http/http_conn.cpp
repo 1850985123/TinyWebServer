@@ -456,6 +456,7 @@ void http_conn::unmap()
 }
 //循环读取客户数据，直到无数据可读或对方关闭连接
 //非阻塞ET工作模式下，需要一次性将数据读完
+/* false: 读取数据失败 或者 客户端断开连接 */
 bool http_conn::read_once()
 {
     //deng: 超过缓冲区大小
@@ -511,6 +512,7 @@ bool http_conn::read_once()
     }
 }
 
+//false: 表示写数据失败 或者 客户端不是长链接每次操作后要断开连接
 bool http_conn::write()
 {
     int temp = 0;
@@ -584,7 +586,6 @@ bool http_conn::write()
         }
     }
 }
-
 
 //deng : 调用这个函数的时候数据已经 读取到读缓冲区里了。
 http_conn::HTTP_CODE http_conn::process_read()

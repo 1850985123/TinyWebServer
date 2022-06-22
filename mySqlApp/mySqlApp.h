@@ -1,7 +1,7 @@
 #ifndef _mySqlApp_h
 #define _mySqlApp_h
 
-#include "sql_connection_pool.h"
+#include "../CGImysql/sql_connection_pool.h"
 #include <fstream>
 #include <map>
 
